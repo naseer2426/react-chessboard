@@ -109,15 +109,21 @@ export function Piece({
     ) {
       const sourceSq = square;
       const targetSq = newSquare[0];
+
+      const sourceIdx = boardState.getLocationIdx(sourceSq);
+      const targetIdx = boardState.getLocationIdx(targetSq);
+      const xDiff = targetIdx.col - sourceIdx.col;
+      const yDiff = targetIdx.row - sourceIdx.row;
+
       if (sourceSq && targetSq) {
         const squareWidth = boardWidth / 8;
         setPieceStyle((oldPieceStyle) => ({
           ...oldPieceStyle,
           transform: `translate(${(boardOrientation === "black" ? -1 : 1) *
-            (targetSq.charCodeAt(0) - sourceSq.charCodeAt(0)) *
+            (xDiff) *
             squareWidth
             }px, ${(boardOrientation === "black" ? -1 : 1) *
-            (Number(sourceSq[1]) - Number(targetSq[1])) *
+            (yDiff) *
             squareWidth
             }px)`,
           transition: `transform ${animationDuration}ms`,

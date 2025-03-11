@@ -77,7 +77,7 @@ export const Default = () => {
       setModifiedFen("#rnbqkbnr/1ppppppp/8/p7/P6P/8/1PPPPPP1/RNBQKBNR")
       setTimeout(() => {
         console.log("setting fen")
-        setModifiedFen("#rnbqkbnr/1pppppp1/8/p6p/P6P/8/1PPPPPP1/RNBQKBNR")
+        setModifiedFen("#rnbqkbnr/1pppppp1/6p1/p7/P6P/8/1PPPPPP1/RNBQKBNR")
       }, 1000)
       return true
     }
@@ -88,8 +88,8 @@ export const Default = () => {
   return <Chessboard
     id="defaultBoard"
     modifiedFen={modifiedFen}
-    boardOrientation="white"
-    // onMove={onMove}
+    boardOrientation="black"
+    onMove={onMove}
     areArrowsAllowed={false}
     arePremovesAllowed={false}
   />;

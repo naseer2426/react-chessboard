@@ -65,6 +65,10 @@ export interface BoardStateInterface {
         added: {[key:string]:string}
         removed: {[key:string]:string}
     };
+    getLocationIdx(location: string): {
+        row: number;
+        col: number;
+    };
     getIsWaitingForAnimation(): boolean;
     setManualDrop(wasManualDrop: boolean): void; // when set, it will not trigger animation
 
@@ -226,6 +230,13 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
         setWasManualDrop(wasManualDrop);
     }
 
+    const getLocationIdx = (location: string): {
+        row: number;
+        col: number;
+    } => {
+        return board.locationToIdx[location];
+    }
+
     return {
         getNumRows,
         getNumCols,
@@ -239,6 +250,7 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
         getDiff,
         getIsWaitingForAnimation,
         setManualDrop,
+        getLocationIdx,
     }
 
 }
