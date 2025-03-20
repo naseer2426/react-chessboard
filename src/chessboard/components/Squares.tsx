@@ -4,7 +4,7 @@ import { Coords, MoveType, Piece as Pc, Square as Sq } from "../types";
 import { Notation } from "./Notation";
 import { Piece } from "./Piece";
 import { Square, SquareType } from "./Square";
-import { BoardState, NON_EXISTENT_SQUARE, Idx, Square as SqState } from "../boardState";
+import { BoardState, NON_EXISTENT_SQUARE, Idx, Square as SqState, BoardStateInterface } from "../boardState";
 
 const A_FILE = "a";
 const H_FILE = "h";
@@ -42,7 +42,7 @@ export function Squares() {
     colArray.reverse();
   }
 
-  const { top, left } = getBoardRelativeOffsets(boardState.getBoard(), boardWidth);
+  const { top, left } = getBoardRelativeOffsets(boardState, boardWidth, boardOrientation);
 
   const [highlightedIdxs, setHighlightedIdxs] = useState<Idx[]>([]);
   const premovesHistory: PremovesHistory = useMemo(() => {
@@ -221,17 +221,30 @@ function showLetters(rank: string, boardOrientation: "white" | "black"): boolean
   return rank === EIGHTH_RANK;
 }
 
-function getBoardRelativeOffsets(board: BoardState, boardWidth: number): { top: number, left: number } {
-  const a8Location = "a8";
-  const a8LocationIdx = board.locationToIdx[a8Location];
-  if (!a8LocationIdx) {
+function getBoardRelativeOffsets(
+  board: BoardStateInterface,
+  boardWidth: number,
+  boardOrientation: "white" | "black",
+): { top: number, left: number } {
+  let topLeftSq = "a8";
+  if (boardOrientation === "black") {
+    topLeftSq = "h1";
+  }
+  const topLeftSqIdx = board.getLocationIdx(topLeftSq);
+  if (!topLeftSqIdx) {
     return {
       top: 0,
       left: 0
     }
   }
+  let top = -topLeftSqIdx.row * boardWidth / 8;
+  let left = -topLeftSqIdx.col * boardWidth / 8;
+  if (boardOrientation === "black") {
+    top = -(board.getNumRows() - topLeftSqIdx.row - 1) * boardWidth / 8;
+    left = -(board.getNumCols() - topLeftSqIdx.col - 1) * boardWidth / 8;
+  }
   return {
-    top: -a8LocationIdx.row * boardWidth / 8,
-    left: -a8LocationIdx.col * boardWidth / 8
+    top,
+    left
   }
 }

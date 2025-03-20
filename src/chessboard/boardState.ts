@@ -47,6 +47,7 @@ type AddUnit = {
     y: number;
 }
 
+//TODO: rethink if we truly need these many methods
 export interface BoardStateInterface {
     // Rendering board state
     getNumRows(): number;
@@ -59,15 +60,15 @@ export interface BoardStateInterface {
         row: number;
         col: number;
     }[];
+    getLocationIdx(location: string): {
+        row: number;
+        col: number;
+    };
     
     // Animation state
     getDiff(): {
         added: {[key:string]:string}
         removed: {[key:string]:string}
-    };
-    getLocationIdx(location: string): {
-        row: number;
-        col: number;
     };
     getIsWaitingForAnimation(): boolean;
     setManualDrop(wasManualDrop: boolean): void; // when set, it will not trigger animation
