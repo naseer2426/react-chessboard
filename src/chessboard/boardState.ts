@@ -85,7 +85,12 @@ export interface BoardStateInterface {
  * 
  * Maybe I will handle it here in the future.
  */
-export function useBoardState(modifiedFen: string): BoardStateInterface {
+export function useBoardState(
+    modifiedFen: string,
+    horizontalExtendLimit: number,
+    verticalExtendLimit: number
+): BoardStateInterface {
+
     const [board, setBoard] = useState<BoardState>({
         rows: [[] as Square[]],
         locationToIdx: {}
@@ -103,7 +108,7 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
 
     useEffect(() => {
         const newRows = modifiedFenToObj(modifiedFen);
-        const newBoard = createBoard(newRows);
+        const newBoard = createBoard(newRows, horizontalExtendLimit, verticalExtendLimit);
         const newPieceMap = locationToPieceMap(newRows);
         const oldPieceMap = locationToPieceMap(board.rows);
         const diff = getDifferences(oldPieceMap, newPieceMap);
@@ -130,7 +135,7 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
         }, ANIMATION_DURATION);
         setPreviousTimeout(newTimeout);
 
-    }, [modifiedFen]);
+    }, [modifiedFen, horizontalExtendLimit, verticalExtendLimit]);
 
     const getNumRows = () => {
         return board.rows.length;
@@ -200,7 +205,7 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
         unitSqIdxs.forEach(unitSqIdx => {
             newRows[unitSqIdx.row][unitSqIdx.col].piece = EMPTY_SQUARE;
         });
-        const newBoard = createBoard(newRows)
+        const newBoard = createBoard(newRows, horizontalExtendLimit, verticalExtendLimit);
         setBoard(newBoard);
     }
 
@@ -403,7 +408,7 @@ function fenToPieceCode(piece: string): string {
     return ("w" + piece.toUpperCase());
 }
 
-function createBoard(rawRows: Row[]): BoardState {
+function createBoard(rawRows: Row[], horizontalExtendLimit: number, verticalExtendLimit: number): BoardState {
     const toAdd: {
         top: number,
         bottom: number,
@@ -415,7 +420,7 @@ function createBoard(rawRows: Row[]): BoardState {
         left: HORIZONTAL_ADD_UNIT.x - numNonExistentColsLeftN(rawRows, HORIZONTAL_ADD_UNIT.x),
         right: HORIZONTAL_ADD_UNIT.x - numNonExistentColsRightN(rawRows, HORIZONTAL_ADD_UNIT.x)
     }
-    const paddedRows = addNesPaddingToRows(rawRows, toAdd)
+    const paddedRows = addNesPaddingToRows(rawRows, toAdd, horizontalExtendLimit, verticalExtendLimit)
     return {
         rows: paddedRows,
         locationToIdx: createLocationToIdx(paddedRows),
@@ -456,9 +461,9 @@ function addNesPaddingToRows(rows: Row[], toAdd: {
     bottom: number,
     left: number,
     right: number
-}): Row[] {
-    const lrPaddedRows = rows.map(row => addLRNesPaddingToRow(row, toAdd.left, toAdd.right))
-    const paddedRows = addTBNesPaddingToRows(lrPaddedRows, toAdd.top, toAdd.bottom)
+}, horizontalExtendLimit: number, verticalExtendLimit: number): Row[] {
+    const lrPaddedRows = rows.map(row => addLRNesPaddingToRow(row, toAdd.left, toAdd.right, horizontalExtendLimit))
+    const paddedRows = addTBNesPaddingToRows(lrPaddedRows, toAdd.top, toAdd.bottom, verticalExtendLimit)
     return paddedRows
 }
 
@@ -475,11 +480,14 @@ function nonExistentRow(rowLength: number, startingFenColIdx: number, rank: stri
     return newRow
 }
 
-function addLRNesPaddingToRow(row: Row, left: number, right: number): Row {
+function addLRNesPaddingToRow(row: Row, left: number, right: number, horizontalExtendLimit: number): Row {
     const newRow: Row = []
     for (let i = 0; i < left; i++) {
         const offset = left - i
         const fenColIdx = getFenColIdx(row[0].file) - offset
+        if (i + 1 > horizontalExtendLimit) {
+            break;
+        }
         newRow.push({
             piece: NON_EXISTENT_SQUARE,
             rank: row[0].rank,
@@ -492,6 +500,9 @@ function addLRNesPaddingToRow(row: Row, left: number, right: number): Row {
     for (let i = 0; i < right; i++) {
         const offset = i + 1
         const fenColIdx = getFenColIdx(row[row.length - 1].file) + offset
+        if (i + 1 > horizontalExtendLimit) {
+            break;
+        }
         newRow.push({
             piece: NON_EXISTENT_SQUARE,
             rank: row[0].rank,
@@ -501,7 +512,7 @@ function addLRNesPaddingToRow(row: Row, left: number, right: number): Row {
     return newRow
 }
 
-function addTBNesPaddingToRows(rows: Row[], top: number, bottom: number): Row[] {
+function addTBNesPaddingToRows(rows: Row[], top: number, bottom: number, verticalExtendLimit: number): Row[] {
     const newRows: Row[] = []
     const rowLength = rows[0].length
     const startingFenColIdx = getFenColIdx(rows[0][0].file)
@@ -510,6 +521,9 @@ function addTBNesPaddingToRows(rows: Row[], top: number, bottom: number): Row[] 
 
     for (let i = 0; i < top; i++) {
         const rank = (parseInt(topRank, 10) + top - i).toString()
+        if (i + 1 > verticalExtendLimit) {
+            break;
+        }
         newRows.push(nonExistentRow(rowLength, startingFenColIdx, rank))
     }
 
@@ -519,6 +533,9 @@ function addTBNesPaddingToRows(rows: Row[], top: number, bottom: number): Row[] 
 
     for (let i = 0; i < bottom; i++) {
         const rank = (parseInt(bottomRank, 10) - i - 1).toString()
+        if (i + 1 > verticalExtendLimit) {
+            break;
+        }
         newRows.push(nonExistentRow(rowLength, startingFenColIdx, rank))
     }
     return newRows

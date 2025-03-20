@@ -276,7 +276,7 @@ export type ChessboardProps = {
    * User function that is run when a move is made. Must return whether the move was successful or not.
    * @default () => true
    */
-  onMove?:(move:Move) => boolean;
+  onMove?: (move: Move) => boolean;
   /**
    * User function that is run when spare piece is dropped on a square. Must return whether the drop was successful or not.
    * @default () => true
@@ -317,10 +317,10 @@ export type ChessboardProps = {
    * @default start
    */
   position?: string | BoardPosition;
-    /**
-   * FEN string that supports modified FEN
-   */
-  modifiedFen?:string 
+  /**
+ * FEN string that supports modified FEN
+ */
+  modifiedFen?: string
   /**
    * Style of promotion dialog.
    * @default default
@@ -350,6 +350,16 @@ export type ChessboardProps = {
    * @default true
    */
   snapToCursor?: boolean;
+  /**
+   * The maximum number of columns the board can be extended to in each horizontal direction.
+   * @default 6
+   */
+  horizontalExtendLimit?: number;
+  /**
+   * The maximum number of rows the board can be extended to in each vertical direction.
+   * @default 2
+   */
+  verticalExtendLimit?: number;
 };
 
 export type ChessboardDnDProviderProps = {
