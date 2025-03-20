@@ -4,19 +4,19 @@ export const NON_EXISTENT_SQUARE = 'E';
 export const EMPTY_SQUARE = 'e';
 export const ANIMATION_DURATION = 300;
 // The add unit for the left and right of the chess board
-const HORIZONTAL_ADD_UNIT: AddUnit = { 
-    x: 1,
-    y: 8
+const HORIZONTAL_ADD_UNIT: AddUnit = {
+    x: 2,
+    y: 2
 }
 
 // The add unit for the top and bottom of the chess board
 const VERTICAL_ADD_UNIT: AddUnit = {
-    x: 8,
-    y: 1
+    x: 2,
+    y: 2
 }
 export type Square = {
     piece: string; // could be a piece or empty/non-existent square
-    rank: string; 
+    rank: string;
     file: string;
 }
 
@@ -64,18 +64,18 @@ export interface BoardStateInterface {
         row: number;
         col: number;
     };
-    
+
     // Animation state
     getDiff(): {
-        added: {[key:string]:string}
-        removed: {[key:string]:string}
+        added: { [key: string]: string }
+        removed: { [key: string]: string }
     };
     getIsWaitingForAnimation(): boolean;
     setManualDrop(wasManualDrop: boolean): void; // when set, it will not trigger animation
 
     // Moves
-    movePiece(from:string, to:string, piece: string): void;
-    materializeUnit(location: string):void
+    movePiece(from: string, to: string, piece: string): void;
+    materializeUnit(location: string): void
 
 }
 /**
@@ -91,8 +91,8 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
         locationToIdx: {}
     } as BoardState);
     const [diff, setDiff] = useState<{
-        added: {[key:string]:string}
-        removed: {[key:string]:string}
+        added: { [key: string]: string }
+        removed: { [key: string]: string }
     }>({
         added: {},
         removed: {}
@@ -121,7 +121,7 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
             if (previousTimeout) clearTimeout(previousTimeout);
             return;
         }
-        
+
         setDiff(diff); // will trigger animation
         setIsWaitingForAnimation(true);
         const newTimeout = setTimeout(() => {
@@ -131,7 +131,7 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
         setPreviousTimeout(newTimeout);
 
     }, [modifiedFen]);
-    
+
     const getNumRows = () => {
         return board.rows.length;
     }
@@ -144,7 +144,7 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
         return board.rows[row][col];
     }
 
-    const movePiece = (from:string, to:string, piece: string) => {
+    const movePiece = (from: string, to: string, piece: string) => {
         const fromIdx = board.locationToIdx[from];
         const toIdx = board.locationToIdx[to];
         if (!fromIdx || !toIdx) {
@@ -186,7 +186,7 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
         return board;
     }
 
-    const materializeUnit = (location: string):void => {
+    const materializeUnit = (location: string): void => {
         const idx = board.locationToIdx[location];
         if (!idx) {
             return;
@@ -217,12 +217,12 @@ export function useBoardState(modifiedFen: string): BoardStateInterface {
     }
 
     const getDiff = (): {
-        added: {[key:string]:string}
-        removed: {[key:string]:string}
+        added: { [key: string]: string }
+        removed: { [key: string]: string }
     } => {
         return diff;
     }
-    
+
     const getIsWaitingForAnimation = (): boolean => {
         return isWaitingForAnimation;
     }
@@ -261,14 +261,14 @@ function getAllPossibleUnits(idx: Idx, addUnit: AddUnit): Idx[][] {
         return [[idx]]
     }
     return [
-        getUnitUsingIdx(idx, {horizontal: 1, vertical: 1}, addUnit),
-        getUnitUsingIdx(idx, {horizontal: 1, vertical: -1}, addUnit),
-        getUnitUsingIdx(idx, {horizontal: -1, vertical: 1}, addUnit),
-        getUnitUsingIdx(idx, {horizontal: -1, vertical: -1}, addUnit),
+        getUnitUsingIdx(idx, { horizontal: 1, vertical: 1 }, addUnit),
+        getUnitUsingIdx(idx, { horizontal: 1, vertical: -1 }, addUnit),
+        getUnitUsingIdx(idx, { horizontal: -1, vertical: 1 }, addUnit),
+        getUnitUsingIdx(idx, { horizontal: -1, vertical: -1 }, addUnit),
     ]
 }
 
-function getUnitUsingIdx(idx: Idx, direction: {horizontal:1|-1, vertical:1|-1}, addUnit: AddUnit            ): Idx[] {
+function getUnitUsingIdx(idx: Idx, direction: { horizontal: 1 | -1, vertical: 1 | -1 }, addUnit: AddUnit): Idx[] {
     const unit: Idx[] = [];
     for (let i = 0; i < addUnit.x; i++) {
         for (let j = 0; j < addUnit.y; j++) {
@@ -282,19 +282,19 @@ function modifiedFenToObj(fen: string): Row[] {
     // cut off any move, castling, etc info from the end. we're only interested in position information
     fen = fen.replace(/ .+$/, "");
     const fenRows = fen.split("/");
-    
-    let currentRowIdx = getFenStartRowIdx(fenRows);
-    let rows:Row[] = [];
 
-    fenRows.forEach((fenRow)=>{
+    let currentRowIdx = getFenStartRowIdx(fenRows);
+    let rows: Row[] = [];
+
+    fenRows.forEach((fenRow) => {
         const parsedRow = fenRow.match(/\d+|[a-zA-Z]/g); // r10r -> ['r', '10', 'r']
         if (!parsedRow) return;
 
         let colIdx = getFenStartColIdx(fenRow);
-        let row:Row = [];
+        let row: Row = [];
 
         //TODO: clean this up later so we wont need so many layers of indentations
-        parsedRow.forEach((unit)=>{
+        parsedRow.forEach((unit) => {
             if (unit.search(/\d/) !== -1) { // number signifies empty squares
                 const numEmptySquares = parseInt(unit, 10);
                 for (let i = 0; i < numEmptySquares; i++) {
@@ -325,11 +325,11 @@ function modifiedFenToObj(fen: string): Row[] {
         rows.push(row);
         currentRowIdx -= 1;
     })
-    
+
     return rows;
 }
 
-function createLocationToIdx(rows:Row[]):{
+function createLocationToIdx(rows: Row[]): {
     [key: string]: {
         row: number;
         col: number;
@@ -342,8 +342,8 @@ function createLocationToIdx(rows:Row[]):{
         }
     } = {};
 
-    rows.forEach((row,rowIdx)=>{
-        row.forEach((square,colIdx)=>{
+    rows.forEach((row, rowIdx) => {
+        row.forEach((square, colIdx) => {
             locationToIdx[`${square.file}${square.rank}`] = {
                 row: rowIdx,
                 col: colIdx
@@ -354,39 +354,39 @@ function createLocationToIdx(rows:Row[]):{
     return locationToIdx;
 }
 
-function getFenStartRowIdx(rows:string[]):number {
+function getFenStartRowIdx(rows: string[]): number {
     const eighthRowIdx = rows.findIndex(row => row.startsWith('#'))
     if (eighthRowIdx === -1) return 8;
     return eighthRowIdx + 8;
 }
 
-function getFenStartColIdx(row:string):number {
+function getFenStartColIdx(row: string): number {
     const aFileIdx = row.indexOf('$')
     if (aFileIdx === -1 || aFileIdx === 0) return 0;
-  
+
     const beforeMarker = row.substring(0, aFileIdx)
     const beforeMarkerSplit = beforeMarker.match(/\d+|[a-zA-Z]/g)
     if (!beforeMarkerSplit) return 0;
-    
+
     let squaresBeforeMarker = 0;
     for (let i = 0; i < beforeMarkerSplit.length; i++) {
-      if (beforeMarkerSplit[i].search(/\d/) === -1) {
-        squaresBeforeMarker += 1;
-        continue;
-      }
-      squaresBeforeMarker += parseInt(beforeMarkerSplit[i], 10)
+        if (beforeMarkerSplit[i].search(/\d/) === -1) {
+            squaresBeforeMarker += 1;
+            continue;
+        }
+        squaresBeforeMarker += parseInt(beforeMarkerSplit[i], 10)
     }
     return -squaresBeforeMarker;
-  }
+}
 
-function getColumnNotation(fenColIdx:number):string {
+function getColumnNotation(fenColIdx: number): string {
     if (fenColIdx < 0) {
         return String.fromCharCode(64 + Math.abs(fenColIdx))
     }
     return String.fromCharCode(97 + fenColIdx)
 }
 
-function getFenColIdx(file:string):number {
+function getFenColIdx(file: string): number {
     let charCode = file.charCodeAt(0)
     if (charCode >= 97) {
         return charCode - 97
@@ -395,25 +395,25 @@ function getFenColIdx(file:string):number {
 }
 
 function fenToPieceCode(piece: string): string {
-// black piece
-if (piece.toLowerCase() === piece) {
-    return ("b" + piece.toUpperCase());
-}
-// white piece
-return ("w" + piece.toUpperCase());
+    // black piece
+    if (piece.toLowerCase() === piece) {
+        return ("b" + piece.toUpperCase());
+    }
+    // white piece
+    return ("w" + piece.toUpperCase());
 }
 
-function createBoard(rawRows:Row[]):BoardState {
-    const toAdd:{
-        top:number,
-        bottom:number,
-        left:number,
-        right:number
+function createBoard(rawRows: Row[]): BoardState {
+    const toAdd: {
+        top: number,
+        bottom: number,
+        left: number,
+        right: number
     } = {
         top: VERTICAL_ADD_UNIT.y - numNonExistentRowsTopN(rawRows, VERTICAL_ADD_UNIT.y),
         bottom: VERTICAL_ADD_UNIT.y - numNonExistentRowsBottomN(rawRows, VERTICAL_ADD_UNIT.y),
-        left:HORIZONTAL_ADD_UNIT.x - numNonExistentColsLeftN(rawRows, HORIZONTAL_ADD_UNIT.x),
-        right:HORIZONTAL_ADD_UNIT.x - numNonExistentColsRightN(rawRows, HORIZONTAL_ADD_UNIT.x)
+        left: HORIZONTAL_ADD_UNIT.x - numNonExistentColsLeftN(rawRows, HORIZONTAL_ADD_UNIT.x),
+        right: HORIZONTAL_ADD_UNIT.x - numNonExistentColsRightN(rawRows, HORIZONTAL_ADD_UNIT.x)
     }
     const paddedRows = addNesPaddingToRows(rawRows, toAdd)
     return {
@@ -423,97 +423,97 @@ function createBoard(rawRows:Row[]):BoardState {
     }
 }
 
-function areAllSqNonExistent(row:Square[]):boolean {
-return row.every((square)=>square.piece === NON_EXISTENT_SQUARE)
+function areAllSqNonExistent(row: Square[]): boolean {
+    return row.every((square) => square.piece === NON_EXISTENT_SQUARE)
 }
 
-function numNonExistentRowsTopN(rows:Row[], n:number):number {
-return rows.slice(0,n).filter(areAllSqNonExistent).length
+function numNonExistentRowsTopN(rows: Row[], n: number): number {
+    return rows.slice(0, n).filter(areAllSqNonExistent).length
 }
 
-function numNonExistentRowsBottomN(rows:Row[], n:number):number {
-return rows.slice(-n).filter(areAllSqNonExistent).length
+function numNonExistentRowsBottomN(rows: Row[], n: number): number {
+    return rows.slice(-n).filter(areAllSqNonExistent).length
 }
 
-function numNonExistentColsLeftN(rows:Row[], n:number):number {
-    let cols:Col[] = []
+function numNonExistentColsLeftN(rows: Row[], n: number): number {
+    let cols: Col[] = []
     for (let i = 0; i < n; i++) {
-        cols.push(rows.map(row=>row[i]))
+        cols.push(rows.map(row => row[i]))
     }
     return cols.filter(areAllSqNonExistent).length
 }
 
-function numNonExistentColsRightN(rows:Row[], n:number):number {
-    let cols:Col[] = []
+function numNonExistentColsRightN(rows: Row[], n: number): number {
+    let cols: Col[] = []
     for (let i = 0; i < n; i++) {
-        cols.push(rows.map(row=>row[row.length - 1 - i]))
+        cols.push(rows.map(row => row[row.length - 1 - i]))
     }
     return cols.filter(areAllSqNonExistent).length
 }
 
-function addNesPaddingToRows(rows:Row[], toAdd:{
-    top:number,
-    bottom:number,
-    left:number,
-    right:number
-}):Row[] {
-    const lrPaddedRows = rows.map(row=>addLRNesPaddingToRow(row, toAdd.left, toAdd.right))
+function addNesPaddingToRows(rows: Row[], toAdd: {
+    top: number,
+    bottom: number,
+    left: number,
+    right: number
+}): Row[] {
+    const lrPaddedRows = rows.map(row => addLRNesPaddingToRow(row, toAdd.left, toAdd.right))
     const paddedRows = addTBNesPaddingToRows(lrPaddedRows, toAdd.top, toAdd.bottom)
     return paddedRows
 }
 
-function nonExistentRow(rowLength: number, startingFenColIdx:number, rank:string):Row {
-    const newRow:Row = []
+function nonExistentRow(rowLength: number, startingFenColIdx: number, rank: string): Row {
+    const newRow: Row = []
     for (let i = 0; i < rowLength; i++) {
         let fenColIdx = startingFenColIdx + i
         newRow.push({
-            piece: NON_EXISTENT_SQUARE, 
-            rank: rank, 
+            piece: NON_EXISTENT_SQUARE,
+            rank: rank,
             file: getColumnNotation(fenColIdx)
         })
     }
     return newRow
 }
 
-function addLRNesPaddingToRow(row:Row, left:number, right:number):Row {
-    const newRow:Row = []
+function addLRNesPaddingToRow(row: Row, left: number, right: number): Row {
+    const newRow: Row = []
     for (let i = 0; i < left; i++) {
-        const offset = left-i
+        const offset = left - i
         const fenColIdx = getFenColIdx(row[0].file) - offset
         newRow.push({
-            piece: NON_EXISTENT_SQUARE, 
-            rank: row[0].rank, 
+            piece: NON_EXISTENT_SQUARE,
+            rank: row[0].rank,
             file: getColumnNotation(fenColIdx)
         })
     }
-    row.forEach(square=>{
+    row.forEach(square => {
         newRow.push(square)
     })
     for (let i = 0; i < right; i++) {
-        const offset = i+1
-        const fenColIdx = getFenColIdx(row[row.length-1].file) + offset
+        const offset = i + 1
+        const fenColIdx = getFenColIdx(row[row.length - 1].file) + offset
         newRow.push({
-            piece: NON_EXISTENT_SQUARE, 
-            rank: row[0].rank, 
+            piece: NON_EXISTENT_SQUARE,
+            rank: row[0].rank,
             file: getColumnNotation(fenColIdx)
         })
     }
     return newRow
 }
 
-function addTBNesPaddingToRows(rows:Row[], top:number, bottom:number):Row[] {
-    const newRows:Row[] = []
+function addTBNesPaddingToRows(rows: Row[], top: number, bottom: number): Row[] {
+    const newRows: Row[] = []
     const rowLength = rows[0].length
     const startingFenColIdx = getFenColIdx(rows[0][0].file)
     const topRank = rows[0][0].rank
-    const bottomRank = rows[rows.length-1][0].rank
+    const bottomRank = rows[rows.length - 1][0].rank
 
     for (let i = 0; i < top; i++) {
         const rank = (parseInt(topRank, 10) + top - i).toString()
         newRows.push(nonExistentRow(rowLength, startingFenColIdx, rank))
     }
 
-    rows.forEach(row=>{
+    rows.forEach(row => {
         newRows.push(row)
     })
 
@@ -562,7 +562,7 @@ function createLocationToUnitSqIdxs(rows: Row[]): { [key: string]: Idx[] } {
     return locationToUnitSqIdxs;
 }
 
-function getAddUnitByLoc(file:string, rank:string):AddUnit {
+function getAddUnitByLoc(file: string, rank: string): AddUnit {
     if (file.charCodeAt(0) < 97 && file.charCodeAt(0) > 65) { // capital letters
         return HORIZONTAL_ADD_UNIT;
     }
@@ -572,15 +572,15 @@ function getAddUnitByLoc(file:string, rank:string):AddUnit {
     return VERTICAL_ADD_UNIT;
 }
 
-function getAddUnitByLocPrioVert(file:string, rank: string):AddUnit {
+function getAddUnitByLocPrioVert(file: string, rank: string): AddUnit {
     if (parseInt(rank, 10) > 8 || parseInt(rank, 10) < 1) {
         return VERTICAL_ADD_UNIT;
     }
     return HORIZONTAL_ADD_UNIT;
 }
 
-function locationToPieceMap(rows:Row[]):{[key:string]:string} {
-    const locationToPieceMap: {[key:string]:string} = {};
+function locationToPieceMap(rows: Row[]): { [key: string]: string } {
+    const locationToPieceMap: { [key: string]: string } = {};
     rows.forEach((row, rowIdx) => {
         row.forEach((square, colIdx) => {
             locationToPieceMap[`${square.file}${square.rank}`] = square.piece;
@@ -590,32 +590,32 @@ function locationToPieceMap(rows:Row[]):{[key:string]:string} {
 }
 
 export function getDifferences(
-    currPieceMap: {[key:string]:string},
-    newPieceMap: {[key:string]:string}
-  ): {
-    added: {[key:string]:string};
-    removed: {[key:string]:string};
-  } {
-    const difference: { added: {[key:string]:string}; removed: {[key:string]:string} } = {
-      removed: {},
-      added: {},
+    currPieceMap: { [key: string]: string },
+    newPieceMap: { [key: string]: string }
+): {
+    added: { [key: string]: string };
+    removed: { [key: string]: string };
+} {
+    const difference: { added: { [key: string]: string }; removed: { [key: string]: string } } = {
+        removed: {},
+        added: {},
     };
-  
+
     // removed from current
     (Object.keys(currPieceMap) as Array<keyof typeof currPieceMap>).forEach(
-      (square) => {
-        if (newPieceMap[square] !== currPieceMap[square])
-          difference.removed[square] = currPieceMap[square];
-      }
+        (square) => {
+            if (newPieceMap[square] !== currPieceMap[square])
+                difference.removed[square] = currPieceMap[square];
+        }
     );
-  
+
     // added from new
     (Object.keys(newPieceMap) as Array<keyof typeof newPieceMap>).forEach(
-      (square) => {
-        if (currPieceMap[square] !== newPieceMap[square])
-          difference.added[square] = newPieceMap[square];
-      }
+        (square) => {
+            if (currPieceMap[square] !== newPieceMap[square])
+                difference.added[square] = newPieceMap[square];
+        }
     );
-  
+
     return difference;
-  }
+}

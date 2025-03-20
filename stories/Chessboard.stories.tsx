@@ -53,42 +53,21 @@ export default meta;
 
 
 export const Default = () => {
-  const [modifiedFen, setModifiedFen] = useState("#rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+  const [modifiedFen, setModifiedFen] = useState("#rnbqkbnr/Pppppppp/8/8/8/8/1PPPPPPP/RNBQKBNR")
 
   const onMove = (
     move: Move,
   ): boolean => {
-    if (move.type === MoveType.EXTEND) {
-      if (move.expandLocation === "A1") {
-        setModifiedFen("#E$rnbqkbnr/E$pppppppp/E$8/E$8/E$8/E$8/E$PPPPPPPP/1$RNBQKBNR")
-        return true
-      }
-      return false
-    }
-    if (move.sourceSquare === "a2" && move.targetSquare === "a4" && move.piece === "wP") {
-      setModifiedFen("#rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR")
-      setTimeout(() => {
-        console.log("setting fen")
-        setModifiedFen("#rnbqkbnr/1ppppppp/8/p7/P7/8/1PPPPPPP/RNBQKBNR")
-      }, 1000)
-      return true
-    }
-    if (move.sourceSquare === "h2" && move.targetSquare === "h4" && move.piece === "wP") {
-      setModifiedFen("#rnbqkbnr/1ppppppp/8/p7/P6P/8/1PPPPPP1/RNBQKBNR")
-      setTimeout(() => {
-        console.log("setting fen")
-        setModifiedFen("#rnbqkbnr/1pppppp1/6p1/p7/P6P/8/1PPPPPP1/RNBQKBNR")
-      }, 1000)
-      return true
-    }
-    console.log(move)
-    return false
+    setTimeout(() => {
+      setModifiedFen("#rQbqkbnr/1ppppppp/8/8/8/8/1PPPPPPP/RNBQKBNR")
+    }, 500)
+    return true
   }
 
   return <Chessboard
     id="defaultBoard"
     modifiedFen={modifiedFen}
-    boardOrientation="black"
+    boardOrientation="white"
     // onMove={onMove}
     areArrowsAllowed={false}
     arePremovesAllowed={false}
