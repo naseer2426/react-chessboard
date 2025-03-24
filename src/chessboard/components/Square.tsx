@@ -95,7 +95,7 @@ export function Square({
   };
   type SparePiece = { piece: Piece; readonly isSpare: true; id: number };
 
-  function handleDrop(item: BoardPiece | SparePiece) {
+  function handleDrop(item: BoardPiece) {
     if (item.isSpare) {
       handleSparePieceDrop(item.piece, location);
       return;

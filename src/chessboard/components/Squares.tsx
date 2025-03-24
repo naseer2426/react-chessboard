@@ -4,7 +4,7 @@ import { Coords, MoveType, Piece as Pc, Square as Sq } from "../types";
 import { Notation } from "./Notation";
 import { Piece } from "./Piece";
 import { Square, SquareType } from "./Square";
-import { BoardState, NON_EXISTENT_SQUARE, Idx, Square as SqState, BoardStateInterface } from "../boardState";
+import { NON_EXISTENT_SQUARE, Idx, Square as SqState, BoardStateInterface } from "../boardState";
 
 const A_FILE = "a";
 const H_FILE = "h";
