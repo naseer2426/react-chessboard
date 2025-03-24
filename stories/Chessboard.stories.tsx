@@ -71,6 +71,8 @@ export const Default = () => {
     // onMove={onMove}
     areArrowsAllowed={false}
     arePremovesAllowed={false}
+    horizontalAddUnit={{ x: 2, y: 2 }}
+    verticalAddUnit={{ x: 2, y: 2 }}
   />;
 };
 

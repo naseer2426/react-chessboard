@@ -184,6 +184,8 @@ export const ChessboardProvider = forwardRef(
       onMove = () => true,
       horizontalExtendLimit = 6,
       verticalExtendLimit = 2,
+      horizontalAddUnit = { x: 1, y: 1 },
+      verticalAddUnit = { x: 1, y: 1 },
     }: ChessboardProviderProps,
     ref
   ) => {
@@ -191,7 +193,13 @@ export const ChessboardProvider = forwardRef(
     const [postition, nonExistentSquares] = modifiedFenToObj(modifiedFen);
     const [currentPosition, setCurrentPosition] = useState(postition);
 
-    const boardState = useBoardState(modifiedFen, horizontalExtendLimit, verticalExtendLimit);
+    const boardState = useBoardState(
+      modifiedFen,
+      horizontalExtendLimit,
+      verticalExtendLimit,
+      horizontalAddUnit,
+      verticalAddUnit
+    );
 
     // calculated differences between current and incoming positions
     const [positionDifferences, setPositionDifferences] = useState<{

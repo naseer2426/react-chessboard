@@ -3,17 +3,7 @@ import { useState, useEffect } from 'react';
 export const NON_EXISTENT_SQUARE = 'E';
 export const EMPTY_SQUARE = 'e';
 export const ANIMATION_DURATION = 300;
-// The add unit for the left and right of the chess board
-const HORIZONTAL_ADD_UNIT: AddUnit = {
-    x: 2,
-    y: 2
-}
 
-// The add unit for the top and bottom of the chess board
-const VERTICAL_ADD_UNIT: AddUnit = {
-    x: 2,
-    y: 2
-}
 export type Square = {
     piece: string; // could be a piece or empty/non-existent square
     rank: string;
@@ -88,7 +78,9 @@ export interface BoardStateInterface {
 export function useBoardState(
     modifiedFen: string,
     horizontalExtendLimit: number,
-    verticalExtendLimit: number
+    verticalExtendLimit: number,
+    horizontalAddUnit: AddUnit,
+    verticalAddUnit: AddUnit
 ): BoardStateInterface {
 
     const [board, setBoard] = useState<BoardState>({
@@ -108,7 +100,13 @@ export function useBoardState(
 
     useEffect(() => {
         const newRows = modifiedFenToObj(modifiedFen);
-        const newBoard = createBoard(newRows, horizontalExtendLimit, verticalExtendLimit);
+        const newBoard = createBoard(
+            newRows,
+            horizontalExtendLimit,
+            verticalExtendLimit,
+            horizontalAddUnit,
+            verticalAddUnit
+        );
         const newPieceMap = locationToPieceMap(newRows);
         const oldPieceMap = locationToPieceMap(board.rows);
         const diff = getDifferences(oldPieceMap, newPieceMap);
@@ -135,7 +133,13 @@ export function useBoardState(
         }, ANIMATION_DURATION);
         setPreviousTimeout(newTimeout);
 
-    }, [modifiedFen, horizontalExtendLimit, verticalExtendLimit]);
+    }, [
+        modifiedFen, 
+        horizontalExtendLimit, 
+        verticalExtendLimit, 
+        horizontalAddUnit, 
+        verticalAddUnit
+    ]);
 
     const getNumRows = () => {
         return board.rows.length;
@@ -205,7 +209,13 @@ export function useBoardState(
         unitSqIdxs.forEach(unitSqIdx => {
             newRows[unitSqIdx.row][unitSqIdx.col].piece = EMPTY_SQUARE;
         });
-        const newBoard = createBoard(newRows, horizontalExtendLimit, verticalExtendLimit);
+        const newBoard = createBoard(
+            newRows, 
+            horizontalExtendLimit, 
+            verticalExtendLimit, 
+            horizontalAddUnit, 
+            verticalAddUnit
+        );
         setBoard(newBoard);
     }
 
@@ -408,23 +418,29 @@ function fenToPieceCode(piece: string): string {
     return ("w" + piece.toUpperCase());
 }
 
-function createBoard(rawRows: Row[], horizontalExtendLimit: number, verticalExtendLimit: number): BoardState {
+function createBoard(
+    rawRows: Row[],
+    horizontalExtendLimit: number,
+    verticalExtendLimit: number,
+    horizontalAddUnit: AddUnit,
+    verticalAddUnit: AddUnit
+): BoardState {
     const toAdd: {
         top: number,
         bottom: number,
         left: number,
         right: number
     } = {
-        top: VERTICAL_ADD_UNIT.y - numNonExistentRowsTopN(rawRows, VERTICAL_ADD_UNIT.y),
-        bottom: VERTICAL_ADD_UNIT.y - numNonExistentRowsBottomN(rawRows, VERTICAL_ADD_UNIT.y),
-        left: HORIZONTAL_ADD_UNIT.x - numNonExistentColsLeftN(rawRows, HORIZONTAL_ADD_UNIT.x),
-        right: HORIZONTAL_ADD_UNIT.x - numNonExistentColsRightN(rawRows, HORIZONTAL_ADD_UNIT.x)
+        top: verticalAddUnit.y - numNonExistentRowsTopN(rawRows, verticalAddUnit.y),
+        bottom: verticalAddUnit.y - numNonExistentRowsBottomN(rawRows, verticalAddUnit.y),
+        left: horizontalAddUnit.x - numNonExistentColsLeftN(rawRows, horizontalAddUnit.x),
+        right: horizontalAddUnit.x - numNonExistentColsRightN(rawRows, horizontalAddUnit.x)
     }
     const paddedRows = addNesPaddingToRows(rawRows, toAdd, horizontalExtendLimit, verticalExtendLimit)
     return {
         rows: paddedRows,
         locationToIdx: createLocationToIdx(paddedRows),
-        locationToUnitSqIdxs: createLocationToUnitSqIdxs(paddedRows)
+        locationToUnitSqIdxs: createLocationToUnitSqIdxs(paddedRows, horizontalAddUnit, verticalAddUnit)
     }
 }
 
@@ -564,14 +580,18 @@ const computeUnitSqIdxs = (idx: Idx, rows: Row[], addUnit: AddUnit): Idx[] => {
     return validUnits[0];
 }
 
-function createLocationToUnitSqIdxs(rows: Row[]): { [key: string]: Idx[] } {
+function createLocationToUnitSqIdxs(
+    rows: Row[], 
+    horizontalAddUnit: AddUnit, 
+    verticalAddUnit: AddUnit
+): { [key: string]: Idx[] } {
     const locationToUnitSqIdxs: { [key: string]: Idx[] } = {};
     rows.forEach((row, rowIdx) => {
         row.forEach((square, colIdx) => {
             if (square.piece !== NON_EXISTENT_SQUARE) {
                 return;
             }
-            const addUnit = getAddUnitByLocPrioVert(square.file, square.rank);
+            const addUnit = getAddUnitByLocPrioVert(square.file, square.rank, horizontalAddUnit, verticalAddUnit);
             const unitSqIdxs = computeUnitSqIdxs({ row: rowIdx, col: colIdx }, rows, addUnit);
             locationToUnitSqIdxs[`${square.file}${square.rank}`] = unitSqIdxs;
         });
@@ -579,21 +599,21 @@ function createLocationToUnitSqIdxs(rows: Row[]): { [key: string]: Idx[] } {
     return locationToUnitSqIdxs;
 }
 
-function getAddUnitByLoc(file: string, rank: string): AddUnit {
+function getAddUnitByLoc(file: string, rank: string, horizontalAddUnit: AddUnit, verticalAddUnit: AddUnit): AddUnit {
     if (file.charCodeAt(0) < 97 && file.charCodeAt(0) > 65) { // capital letters
-        return HORIZONTAL_ADD_UNIT;
+        return horizontalAddUnit;
     }
     if (file.charCodeAt(0) > 68) { // letters beyond small h
-        return HORIZONTAL_ADD_UNIT;
+        return horizontalAddUnit;
     }
-    return VERTICAL_ADD_UNIT;
+    return verticalAddUnit;
 }
 
-function getAddUnitByLocPrioVert(file: string, rank: string): AddUnit {
+function getAddUnitByLocPrioVert(file: string, rank: string, horizontalAddUnit: AddUnit, verticalAddUnit: AddUnit): AddUnit {
     if (parseInt(rank, 10) > 8 || parseInt(rank, 10) < 1) {
-        return VERTICAL_ADD_UNIT;
+        return verticalAddUnit;
     }
-    return HORIZONTAL_ADD_UNIT;
+    return horizontalAddUnit;
 }
 
 function locationToPieceMap(rows: Row[]): { [key: string]: string } {
