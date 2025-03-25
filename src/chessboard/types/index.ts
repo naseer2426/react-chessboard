@@ -73,6 +73,11 @@ export type Coords = { x: number; y: number };
 
 export type Arrow = [Square, Square, string?];
 
+export type AddUnit = {
+  x: number;
+  y: number;
+}
+
 export type Move = {
   type: MoveType
 
@@ -360,6 +365,15 @@ export type ChessboardProps = {
    * @default 2
    */
   verticalExtendLimit?: number;
+  /**
+   * The add unit for the top and bottom of the chess board
+   */
+  verticalAddUnit: AddUnit;
+  /**
+   * The add unit for the left and right of the chess board
+   */
+  horizontalAddUnit: AddUnit;
+  
 };
 
 export type ChessboardDnDProviderProps = {
