@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useRef, useState, useMemo } from "react";
 import { Meta } from "@storybook/react";
-import { Chess } from "chess.js";
 import { Move, MoveType } from "../src/chessboard/types";
+import { Chess, GameStatus } from "chessjs-expandable"
 
 import {
   Chessboard,
@@ -53,25 +53,43 @@ export default meta;
 
 
 export const Default = () => {
-  const [modifiedFen, setModifiedFen] = useState("#rnbqkbnr/Pppppppp/8/8/8/8/1PPPPPPP/RNBQKBNR")
+  const [chess, setChess] = useState<Chess>(new Chess(
+    "8/8/8/5K2/2P5/3k4/8/8 b - - 0 1",
+    1,
+    1,
+    { x: 1, y: 1 },
+    { x: 1, y: 1 }
+  ))
 
-  const onMove = (
-    move: Move,
-  ): boolean => {
-    setTimeout(() => {
-      setModifiedFen("#rQbqkbnr/1ppppppp/8/8/8/8/1PPPPPPP/RNBQKBNR")
-    }, 500)
-    return true
+  if (chess.getGameStatus() !== GameStatus.IN_PROGRESS) {
+    alert(chess.getGameStatus())
   }
 
   return <Chessboard
     id="defaultBoard"
-    modifiedFen={modifiedFen}
+    modifiedFen={chess.getCurrentFen()}
     boardOrientation="white"
-    // onMove={onMove}
+    onMove={(move: Move) => {
+      const chessCopy = chess.new()
+      const valid = chessCopy.moveFromBoard({
+        moveType: move.type,
+        sourceSquare: move.sourceSquare,
+        targetSquare: move.targetSquare,
+        piece: move.piece,
+        expandLocation: move.expandLocation
+      })
+      if (valid) {
+        setChess(chessCopy)
+        return true
+      }
+
+      return false
+    }}
     areArrowsAllowed={false}
     arePremovesAllowed={false}
-    horizontalAddUnit={{ x: 2, y: 2 }}
-    verticalAddUnit={{ x: 2, y: 2 }}
+    horizontalAddUnit={{ x: 1, y: 1 }}
+    verticalAddUnit={{ x: 1, y: 1 }}
+    horizontalExtendLimit={1}
+    verticalExtendLimit={1}
   />;
 };

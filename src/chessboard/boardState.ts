@@ -478,9 +478,58 @@ function addNesPaddingToRows(rows: Row[], toAdd: {
     left: number,
     right: number
 }, horizontalExtendLimit: number, verticalExtendLimit: number): Row[] {
-    const lrPaddedRows = rows.map(row => addLRNesPaddingToRow(row, toAdd.left, toAdd.right, horizontalExtendLimit))
-    const paddedRows = addTBNesPaddingToRows(lrPaddedRows, toAdd.top, toAdd.bottom, verticalExtendLimit)
+
+    const existingPadding = getExistingPadding(rows)
+    const left = getPaddingToAdd(existingPadding.left, toAdd.left, horizontalExtendLimit)
+    const right = getPaddingToAdd(existingPadding.right, toAdd.right, horizontalExtendLimit)
+    const top = getPaddingToAdd(existingPadding.top, toAdd.top, verticalExtendLimit)
+    const bottom = getPaddingToAdd(existingPadding.bottom, toAdd.bottom, verticalExtendLimit)
+
+    const lrPaddedRows = rows.map(row => addLRNesPaddingToRow(row, left, right, horizontalExtendLimit))
+    const paddedRows = addTBNesPaddingToRows(lrPaddedRows, top, bottom, verticalExtendLimit)
     return paddedRows
+}
+
+function getPaddingToAdd(existing:number, toAdd: number, limit:number): number {
+    const total = existing + toAdd
+    if (total > limit) {
+        return limit - existing
+    }
+    return toAdd
+}
+
+function getExistingPadding(rows: Row[]): {
+    top: number,
+    bottom: number,
+    left: number,
+    right: number
+} {
+    const eighthRankIdx = rows.findIndex(row => row[0].rank === "8")
+    if (eighthRankIdx === -1) {
+        // should never happen since we always start off with normal board
+        return {
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0
+        }
+    }
+    const aFileIdx = rows[0].findIndex(square => square.file === "a")
+    if (aFileIdx === -1) {
+        // should never happen since we always start off with normal board
+        return {
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0
+        }
+    }
+    return {
+        top: eighthRankIdx,
+        bottom: rows.length - (8+eighthRankIdx),
+        left: aFileIdx,
+        right: rows[0].length - (8+aFileIdx)
+    }
 }
 
 function nonExistentRow(rowLength: number, startingFenColIdx: number, rank: string): Row {

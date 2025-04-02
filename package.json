@@ -65,6 +65,7 @@
     "react-dom": ">=16.14.0"
   },
   "dependencies": {
+    "chessjs-expandable": "^0.0.7",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dnd-touch-backend": "^16.0.1"
