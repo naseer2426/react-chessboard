@@ -1,6 +1,6 @@
 {
   "name": "react-chessboard-expandable",
-  "version": "0.0.3-alpha.0",
+  "version": "0.0.3",
   "description": "A fork of the react-chessboard library to support an expandable chessboard",
   "author": "Naseer Ahmed Khan <naseerfathima2426@gmail.com>",
   "repository": "https://github.com/naseer2426/react-chessboard",
